@@ -1,0 +1,19 @@
+---
+# Deploy a rabbitmq cluster.
+
+- hosts: rabbit
+  remote_user: vagrant
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: jmatt.rabbitmq-packages
+    - role: rabbitmq-cluster
+    - role: rabbitmq-config
+
+- hosts: all
+  remote_user: vagrant
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Display all variables and facts known for a host.
+      debug: var=hostvars[inventory_hostname] verbosity=2

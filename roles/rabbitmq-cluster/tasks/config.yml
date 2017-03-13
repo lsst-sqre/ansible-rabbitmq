@@ -1,0 +1,29 @@
+---
+# Configure rabbitmq servers.
+
+- name:
+    rabbitmq_user:
+    user: square
+    password: "martinet-ensign-gypsy-sorcery"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
+
+- name:
+    rabbitmq_user:
+    user: pan
+    password: "stickle-acclaim-wrongly-rhodesia-positive-muck"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
+
+- name:
+    rabbitmq_user:
+      user: guest
+    state: absent

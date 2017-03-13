@@ -1,0 +1,41 @@
+---
+# Prepare rabbitmq servers to create cluster.
+
+- name: Create list of RabbitMQ IPs and hostnames to use when creating the cluster.
+  set_fact:
+    cluster_hosts: "{% for host in groups['rabbit'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
+    
+- debug: var=cluster_hosts
+
+- name: Update /etc/hosts.
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ item }}"
+    insertbefore: "^# "
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ cluster_hosts.split(',') }}"
+
+- name: "Stop rabbitmq apps."
+  command: "rabbitmqctl stop_app"
+
+- name: "Leave any existing cluster."
+  command: "rabbitmqctl force_reset"
+
+- name: "Get rabbit-0 .erlang.cookie."
+  slurp:
+    src: /var/lib/rabbitmq/.erlang.cookie
+  register: erlang_cookie_encoded
+  when: ansible_hostname == "rabbit-0"
+
+- name: "Set fact for the erlang_cookie."
+  set_fact:
+    erlang_cookie: "{{ erlang_cookie_encoded['content'] | b64decode }}"
+  when: ansible_hostname == "rabbit-0"
+  ignore_errors: yes
+
+- debug:
+    msg: "{{ erlang_cookie_encoded['content'] | b64decode }}"
+    verbosity: 2
+  when: ansible_hostname == "rabbit-0"

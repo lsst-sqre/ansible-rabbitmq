@@ -1,0 +1,11 @@
+---
+# tasks file for rabbitmq
+
+- name: "Prepare RabbitMQ cluster."
+  include: prepare.yml
+
+- name: "Start the rabbit leader."
+  include: start.yml
+
+- name: "Configure RabbitMQ cluster."
+  include: cluster.yml
