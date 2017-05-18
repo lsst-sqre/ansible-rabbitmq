@@ -1,0 +1,49 @@
+---
+# Configure rabbitmq vhost, exchanges and queues.
+
+
+- name: "Add square user."
+  rabbitmq_user:
+    user: square
+    password: "{{ rabbitmq_user_square_password }}"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
+  run_once: yes
+  delegate_to: "{{ groups['rabbit'][0] }}"
+
+- rabbitmq_vhost:
+    name: /pan
+    state: present
+
+- pip:
+    name: requests
+    
+- rabbitmq_exchange:
+    name: logstashExchange
+    durable: yes
+    login_user: "square"
+    login_password: "{{ rabbitmq_user_square_password }}"
+    type: direct
+    state: present
+    vhost: pan
+
+- rabbitmq_queue:
+    name: logstashQueue
+    durable: yes
+    login_user: "square"
+    login_password: "{{ rabbitmq_user_square_password }}"
+    state: present
+    vhost: pan
+
+- rabbitmq_binding:
+    name: logstashExchange
+    destination: logstashQueue  
+    type: queue
+    login_user: "square"
+    login_password: "{{ rabbitmq_user_square_password }}"
+    state: present
+    vhost: pan

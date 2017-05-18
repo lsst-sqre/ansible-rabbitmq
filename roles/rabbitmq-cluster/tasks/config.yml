@@ -4,23 +4,37 @@
 - name:
     rabbitmq_user:
     user: square
-    password: "martinet-ensign-gypsy-sorcery"
+    password: "{{ rabbitmq_user_square_password }}"
     permissions:
       - vhost: /
         configure_priv: .*
         read_priv: .*
         write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags:
+      - administrator
+      - management
     state: present
 
 - name:
     rabbitmq_user:
     user: pan
-    password: "stickle-acclaim-wrongly-rhodesia-positive-muck"
+    password: "{{ rabbitmq_user_pan_password }}"
     permissions:
       - vhost: /
         configure_priv: .*
         read_priv: .*
         write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags:
+      - pan
+      - logstash
     state: present
 
 - name:
