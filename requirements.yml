@@ -3,4 +3,4 @@
 - src: cyverse.geoip
 - src: jmatt.beats
 - src: jmatt.java-packages
-- src: jmatt-logstash-packages
+- src: jmatt.logstash-packages
