@@ -11,6 +11,9 @@ addons:
     packages:
     - python-pip
 
+env:
+  - ANSIBLE_ROLES_PATH=./roles
+
 install:
   # Install ansible
   - pip install ansible
