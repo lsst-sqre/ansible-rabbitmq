@@ -134,8 +134,7 @@
 - name: Remove rabbitmq shovel.
   rabbitmq_parameter:
     component: shovel
-    name: logstash
-    value: '{"src-uri": "amqp://", "src-exchange-key": "logstash", "src-exchange": "logstash-shovel-exchange", "dest-uri": "amqp://square:{{ rabbitmq_user_square_password }}@rabbit-0.lsst.codes/logstash", "dest-exchange": "logstash-exchange"}'
+    name: panopticon-logstash
     state: absent
   ignore_errors: yes
   when: ansible_hostname == "rabbit-aws"
@@ -143,7 +142,7 @@
 - name: Add rabbitmq shovel.
   rabbitmq_parameter:
     component: shovel
-    name: logstash
-    value: '{"src-uri": "amqp://", "src-exchange": "logstash-shovel-exchange", "dest-uri": "amqp://pan:{{ rabbitmq_user_pan_password }}@rabbit-0.lsst.codes/logstash", "dest-exchange": "logstash-exchange"}'
+    name: "panopticon-logstash-shovel"
+    value: '{"src-uri": "amqp://", "src-queue": "panopticon-logstash", "dest-uri": "amqp://pan:stickle-acclaim-wrongly-rhodesia-positive-muck@rabbit-0.lsst.codes/logstash", "dest-exchange": "logstash-exchange"}'
     state: present
   when: ansible_hostname == "rabbit-aws"

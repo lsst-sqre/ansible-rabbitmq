@@ -11,9 +11,6 @@ addons:
     packages:
     - python-pip
 
-env:
-  - ANSIBLE_ROLES_PATH=./roles
-
 install:
   # Install ansible
   - pip install ansible
@@ -22,7 +19,7 @@ install:
   - ansible --version
 
   # Create ansible.cfg with correct roles_path
-  - printf '[defaults]\nroles_path=../' >ansible.cfg
+  - printf '[defaults]\nroles_path=../:roles' >ansible.cfg
 
 before_script:
   - echo localhost > inventory
@@ -30,7 +27,7 @@ before_script:
 
 script:
   # Basic role syntax check
-  - ansible-playbook tests/test.yml --role-path ./roles -i tests/inventory --syntax-check
+  - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
