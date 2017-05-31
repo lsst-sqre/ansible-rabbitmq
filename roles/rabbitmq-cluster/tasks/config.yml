@@ -1,0 +1,43 @@
+---
+# Configure rabbitmq servers.
+
+- name:
+    rabbitmq_user:
+    user: square
+    password: "{{ rabbitmq_user_square_password }}"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags:
+      - administrator
+      - management
+    state: present
+
+- name:
+    rabbitmq_user:
+    user: pan
+    password: "{{ rabbitmq_user_pan_password }}"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags:
+      - pan
+      - logstash
+    state: present
+
+- name:
+    rabbitmq_user:
+      user: guest
+    state: absent

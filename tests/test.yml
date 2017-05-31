@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - rabbitmq-config
+    - rabbitmq-cluster
+    - rabbitmq-shovel
+    - logstash-config
+

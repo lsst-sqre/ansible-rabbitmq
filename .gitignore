@@ -1,0 +1,10 @@
+*~
+*.retry
+hosts
+roles/jdauphant.ssl-certs
+jmatt.rabbitmq-packages
+cyverse.geoip
+jmatt.beats
+jmatt.java-packages
+jmatt.logstash-packages
+dev.yml

@@ -1,0 +1,31 @@
+---
+
+- name: "Distribute the .erlang.cookie."
+  lineinfile:
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    regexp: "^[A-Z]+$"
+    line: "{{ hostvars['rabbit-0.lsst.codes']['erlang_cookie'] }}"
+    mode: 0400
+    state: present
+  when: ansible_hostname != "rabbit-0"
+
+- name: Restart rabbitmq-server.service.
+  systemd:
+    name: rabbitmq-server
+    state: restarted
+
+- name: "Stop rabbitmq apps."
+  command: "rabbitmqctl stop_app"
+
+- name: "Start the rabbit leader."
+  include: start.yml
+
+- name: "Join cluster."
+  command: "rabbitmqctl join_cluster rabbit@rabbit-0"
+  when: ansible_hostname != "rabbit-0"
+
+- name: "Start apps."
+  command: "rabbitmqctl start_app"
+
+- name: "Rename cluster."
+  command: "rabbitmqctl set_cluster_name rabbit@rabbit"

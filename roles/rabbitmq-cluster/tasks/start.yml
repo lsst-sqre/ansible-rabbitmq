@@ -1,0 +1,6 @@
+---
+# Start rabbit-0.
+
+- name: "Start rabbit-0."
+  command: "rabbitmqctl start_app"
+  when: ansible_hostname == "rabbit-0"

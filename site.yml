@@ -1,0 +1,91 @@
+---
+# Deploy a rabbitmq cluster.
+
+# - hosts: rabbit
+#   remote_user: vagrant
+#   become: yes
+#   gather_facts: yes
+#   roles:
+#     - role: jmatt.rabbitmq-packages
+#     - role: rabbitmq-config
+
+# - hosts: rabbit-cluster
+#   remote_user: vagrant
+#   become: yes
+#   gather_facts: yes
+#   roles:
+#     - role: rabbitmq-cluster
+
+# - hosts: rabbit
+#   remote_user: vagrant
+#   become: yes
+#   gather_facts: yes
+#   roles:
+#     - role: rabbitmq-config
+
+# - hosts: all
+#   remote_user: vagrant
+#   become: yes
+#   gather_facts: yes
+#   tasks:
+#     - name: Display all variables and facts known for a host.
+#       debug: var=hostvars[inventory_hostname] verbosity=2
+
+- hosts: rabbit-shovel rabbit-cluster
+  remote_user: vagrant
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: rabbitmq-shovel
+
+- hosts: rabbit-shovel
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: jdauphant.ssl-certs
+      ssl_certs_common_name: "lsst.codes"
+      ssl_certs_generate_self_signed: no
+      ssl_certs_generate_dh_param: yes
+    - role: jmatt.logstash-packages
+    - role: logstash-config
+
+- hosts: rabbit-shovel
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: jmatt.beats
+      beats_package_name: metricbeat
+      beats_package_version: "5.4.0"
+      beats_geoip: true
+      beats_config: |
+        metricbeat.modules:
+        - module: system
+          metricsets:
+            - cpu
+            - filesystem
+            - memory
+            - network
+            - process
+          enabled: true
+          period: 60s
+          processes: ['.*']
+          cpu_ticks: false
+        output:
+          logstash:
+            hosts:
+              - "localhost:5044"
+        logging:
+          to_files: true
+          files:
+            path: "/var/log/metricbeat"
+            name: "metricbeat.log"
+            keepfiles: 10
+        shipper:
+          tags:
+            - "panopticon"
+        # - module: nginx
+        #   metricsets: ["stubstatus"]
+        #   enabled: true
+        #   period: 60s
+        #   # Nginx hosts
+        #   hosts: ["https://git-lfs.lsst.codes", "http://git-lfs.lsst.codes", "https://git-lfs-test.lsst.codes", "http://git-lfs-test.lsst.codes"]

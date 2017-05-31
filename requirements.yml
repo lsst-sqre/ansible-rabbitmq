@@ -1,0 +1,6 @@
+- src: jmatt.rabbitmq-packages
+- src: jdauphant.ssl-certs
+- src: cyverse.geoip
+- src: jmatt.beats
+- src: jmatt.java-packages
+- src: jmatt.logstash-packages

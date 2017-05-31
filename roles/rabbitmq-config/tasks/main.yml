@@ -1,0 +1,6 @@
+---
+# Configure rabbitmq servers.
+
+# - include: routes.yml
+
+- include: users.yml

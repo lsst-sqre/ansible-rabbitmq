@@ -1,0 +1,148 @@
+---
+# Configure a RabbitMQ shovel from the shovel machine to the cluster.
+
+- name: Add logstash vhost.
+  rabbitmq_vhost:
+    name: logstash
+    state: present
+    tracing: no
+  ignore_errors: yes
+
+- name: Add shovel and management plugins.
+  rabbitmq_plugin:
+    names: "rabbitmq_shovel,rabbitmq_management"
+    new_only: yes
+    state: enabled
+  
+- name: Delete square user.
+  rabbitmq_user:
+    user: square
+    state: absent
+  ignore_errors: yes
+
+- name: Delete pan user.
+  rabbitmq_user:
+    user: pan
+    state: absent
+  ignore_errors: yes
+
+- name: Add square user.
+  rabbitmq_user:
+    user: square
+    password: "{{ rabbitmq_user_square_password }}"
+    force: yes
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags: administrator,management
+    state: present
+  ignore_errors: yes
+  when: 'ansible_hostname in ["rabbit-0", "rabbit-aws"]'
+
+- name: Add pan user.
+  rabbitmq_user:
+    user: pan
+    password: "{{ rabbitmq_user_pan_password }}"
+    force: no
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: test
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags: pan,logstash
+    state: present
+  ignore_errors: yes
+  when: 'ansible_hostname in ["rabbit-0"]'
+
+- name: Add pan user.
+  rabbitmq_user:
+    user: pan
+    password: "{{ rabbitmq_user_pan_password }}"
+    force: no
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+      - vhost: logstash
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    tags: pan,logstash
+    state: present
+  ignore_errors: yes
+  when: 'ansible_hostname in ["rabbit-aws"]'
+    
+- name: Add rabbitmq destination queue on cluster.
+  rabbitmq_queue:
+    name: logstash-queue
+    vhost: logstash
+    login_user: square
+    login_password: "{{ rabbitmq_user_square_password }}"
+    state: present
+  ignore_errors: yes
+  when: ansible_hostname == "rabbit-0"
+
+- name: Add rabbitmq source exchange on shovel.
+  rabbitmq_exchange:
+    name: logstash-exchange
+    type: direct
+    vhost: logstash
+    login_user: square
+    login_password: "{{ rabbitmq_user_square_password }}"
+    state: present
+  ignore_errors: yes
+  when: ansible_hostname == "rabbit-0"
+
+- name: Add rabbitmq destination binding for logstash-queue and logstash-exchange.
+  rabbitmq_binding:
+    name: logstash-exchange
+    destination: logstash-queue
+    routing_key: logstash
+    vhost: logstash
+    login_user: square
+    login_password: "{{ rabbitmq_user_square_password }}"
+    type: queue
+    state: present
+  ignore_errors: yes
+  when: ansible_hostname == "rabbit-0"
+
+- name: Add rabbitmq source exchange on shovel.
+  rabbitmq_exchange:
+    name: logstash-shovel-exchange
+    type: direct
+    login_user: square
+    login_password: "{{ rabbitmq_user_square_password }}"
+    state: present
+  ignore_errors: yes
+  when: ansible_hostname == "rabbit-aws"
+
+- name: Remove rabbitmq shovel.
+  rabbitmq_parameter:
+    component: shovel
+    name: panopticon-logstash
+    state: absent
+  ignore_errors: yes
+  when: ansible_hostname == "rabbit-aws"
+
+- name: Add rabbitmq shovel.
+  rabbitmq_parameter:
+    component: shovel
+    name: "panopticon-logstash-shovel"
+    value: '{"src-uri": "amqp://", "src-queue": "panopticon-logstash", "dest-uri": "amqp://pan:stickle-acclaim-wrongly-rhodesia-positive-muck@rabbit-0.lsst.codes/logstash", "dest-exchange": "logstash-exchange"}'
+    state: present
+  when: ansible_hostname == "rabbit-aws"
